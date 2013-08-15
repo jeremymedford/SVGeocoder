@@ -79,6 +79,13 @@ typedef NSUInteger SVGeocoderState;
     return geocoder;
 }
 
++ (SVGeocoder*)geocode:(NSString *)address circularRegion:(CLCircularRegion *)circularRegion completion:(SVGeocoderCompletionHandler)block
+{
+    SVGeocoder *geocoder = [[self alloc] initWithAddress:address circularRegion:circularRegion completion:block];
+    [geocoder start];
+    return geocoder;
+}
+
 + (SVGeocoder *)reverseGeocode:(CLLocationCoordinate2D)coordinate completion:(SVGeocoderCompletionHandler)block {
     SVGeocoder *geocoder = [[self alloc] initWithCoordinate:coordinate completion:block];
     [geocoder start];
@@ -114,6 +121,20 @@ typedef NSUInteger SVGeocoderState;
                                             coordinateRegion.center.longitude+(coordinateRegion.span.longitudeDelta/2.0)], @"bounds", nil];
     
     return [self initWithParameters:parameters completion:block];
+}
+
+- (SVGeocoder*)initWithAddress:(NSString *)address circularRegion:(CLCircularRegion *)circularRegion completion:(SVGeocoderCompletionHandler)block {
+    MKCoordinateRegion coordinateRegion = MKCoordinateRegionMakeWithDistance(circularRegion.center, circularRegion.radius, circularRegion.radius);
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                       address, @"address",
+                                       [NSString stringWithFormat:@"%f,%f|%f,%f",
+                                        coordinateRegion.center.latitude-(coordinateRegion.span.latitudeDelta/2.0),
+                                        coordinateRegion.center.longitude-(coordinateRegion.span.longitudeDelta/2.0),
+                                        coordinateRegion.center.latitude+(coordinateRegion.span.latitudeDelta/2.0),
+                                        coordinateRegion.center.longitude+(coordinateRegion.span.longitudeDelta/2.0)], @"bounds", nil];
+    
+    return [self initWithParameters:parameters completion:block];
+    
 }
 
 
